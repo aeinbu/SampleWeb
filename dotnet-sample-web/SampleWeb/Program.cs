@@ -2,10 +2,10 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 //TODO:
-// * configuration
+// v configuration
 // - environment vars
 // - secrets
-// * logging
+// - logging
 // - Serilog
 // * DI
 // - Autofac
@@ -14,5 +14,7 @@ var app = builder.Build();
 // - SignalR
 
 app.MapGet("/", () => "Hello World!");
+
+app.MapGet("/config1/", () => $"The config settings are:\r\n- {app.Configuration["config_a"]}\r\n- {app.Configuration["config_b"]}\r\n- {app.Configuration["config_c"]}");
 
 app.Run();
