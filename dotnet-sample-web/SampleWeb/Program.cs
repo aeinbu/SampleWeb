@@ -4,10 +4,13 @@ builder.Services.AddTransient<IMyTransientService, MyService>();
 builder.Services.AddScoped<IMyScopedService, MyService>();
 builder.Services.AddSingleton<IMySingletonService, MyService>();
 
-var app = builder.Build();
+builder.Services.AddControllers();
 
+var app = builder.Build();
+app.Logger.LogInformation("The app started");
 
 app.UseHttpLogging();
+
 //TODO:
 // v configuration
 // - environment vars
@@ -20,7 +23,8 @@ app.UseHttpLogging();
 // - authorization
 // - SignalR
 
-app.Logger.LogInformation("The app started");
+app.MapControllers();
+
 app.MapGet("/", () => "Hello World!");
 
 app.MapGet("/config/", () => $"""
