@@ -1,8 +1,18 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddTransient<IMyTransientService, MyService>();
 builder.Services.AddScoped<IMyScopedService, MyService>();
 builder.Services.AddSingleton<IMySingletonService, MyService>();
+
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthorizationBuilder()
+  .AddPolicy("secrets-admin", policy =>
+        policy
+            .RequireRole("admin")
+            .RequireClaim("scope", "secrets-api"));
 
 builder.Services.AddControllers();
 
@@ -19,8 +29,8 @@ app.UseHttpLogging();
 // - Serilog
 // v DI
 // - Autofac
-// * authentication
-// - authorization
+// v authentication
+// v authorization
 // - SignalR
 
 app.MapControllers();
@@ -35,7 +45,8 @@ app.MapGet("/config/", () => $"""
     """);
 
 
-app.MapGet("/scopes", () => {
+app.MapGet("/scopes", () =>
+{
     using var scope = app.Services.CreateScope();
     return $"""
         The scopes are:
@@ -49,5 +60,9 @@ app.MapGet("/scopes", () => {
             - new MyService() {new MyService()}
         """;
 });
+
+app.MapGet("/secret", [Authorize](ClaimsPrincipal user) => $"For your eyes only, {user.Identity?.Name} - You are authorized to see this");
+
+app.MapGet("/secret-admin", [Authorize("secrets-admin")](ClaimsPrincipal user) => $"You are a secrets-admin if you're seeing this");
 
 app.Run();
